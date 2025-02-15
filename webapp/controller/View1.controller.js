@@ -9,17 +9,33 @@ sap.ui.define([
     "sap/m/Column"
 ], (Controller, JSONModel, ValueHelpDialog, Label, Text, UIColumn, ColumnListItem, MColumn) => {
     "use strict";
-
+     var that;
     return Controller.extend("mutlivaluefield.controller.View1", {
         onInit() {
+            that = this;
             this._loadProductModel();
             var oModel = new sap.ui.model.json.JSONModel({
                 SelectedItems: []
             });
             this.getView().setModel(oModel, "viewModel");
         },
-
-        /** Load JSON Model Directly in onInit */
+        OnSelection:function()
+        {
+            let getSelectedkey =  that.byId("_IDGenComboBox1").getSelectedKey()
+  
+            if (getSelectedkey=="Algeria") {
+                that.byId("_IDGenVBox2").setVisible(false)
+                that.byId("vbox23").setVisible(false)
+            }
+            if (getSelectedkey=="Argentina") {
+                that.byId("_IDGenVBox2").setVisible(true)
+                that.byId("vbox23").setVisible(false)
+            }
+            if (getSelectedkey=="Australia") {
+                that.byId("_IDGenVBox2").setVisible(false)
+                that.byId("vbox23").setVisible(true)
+            }
+        },
         _loadProductModel: function () {
             var oData = {
                 ZSALESREPORT: [
@@ -35,11 +51,9 @@ sap.ui.define([
             var oModel = new JSONModel(oData);
             this.getView().setModel(oModel, "productModel");
         },
-
-        /** Open Value Help Dialog */
         onValueHelp: function () {
             var oView = this.getView();
-        
+
             if (!this._oValueHelpDialog) {
                 this._oValueHelpDialog = new ValueHelpDialog({
                     title: "Select Product",
@@ -50,60 +64,60 @@ sap.ui.define([
                     ok: this.onValueHelpOk.bind(this),
                     cancel: this.onValueHelpCancel.bind(this)
                 });
-        
+
                 oView.addDependent(this._oValueHelpDialog);
-        
+
                 // **Create FilterBar**
                 var oFilterBar = new sap.ui.comp.filterbar.FilterBar({
                     advancedMode: true,
                     filterBarExpanded: true,
                     search: this.onFilterSearch.bind(this)
                 });
-        
+
                 // **Create Basic Search Field**
                 this._oBasicSearchField = new sap.m.SearchField({
                     placeholder: "Search",
-                    width:"80%"
-                    
+                    width: "80%"
+
                 });
                 oFilterBar.setFilterBarExpanded(false);
-				oFilterBar.setBasicSearch(this._oBasicSearchField);
-                this._oBasicSearchField.attachSearch(function() {
-					oFilterBar.search();
-				});
-        
+                oFilterBar.setBasicSearch(this._oBasicSearchField);
+                this._oBasicSearchField.attachSearch(function () {
+                    oFilterBar.search();
+                });
+
                 // oFilterBar.setBasicSearch(this._oBasicSearchField);
-        
+
                 // oFilterBar.addContent(this._oBasicSearchField);
-              
+
                 this._oValueHelpDialog.setFilterBar(oFilterBar);
             }
-        
+
             // **Set Model**
             var oModel = this.getView().getModel("productModel");
             this._oValueHelpDialog.setModel(oModel, "productModel");
-        
+
             // **Get Table and Bind Data**
             this._oValueHelpDialog.getTableAsync().then(function (oTable) {
                 oTable.setModel(oModel, "productModel");
-        
+
                 // **For Desktop: sap.ui.table.Table**
                 if (oTable.bindRows) {
                     oTable.bindAggregation("rows", {
                         path: "productModel>/ZSALESREPORT"
                     });
-        
+
                     oTable.addColumn(new UIColumn({
                         label: new Label({ text: "Product Code" }),
                         template: new Text({ text: "{productModel>ProductCode}" })
                     }));
-        
+
                     oTable.addColumn(new UIColumn({
                         label: new Label({ text: "Product Name" }),
                         template: new Text({ text: "{productModel>ProductName}" })
                     }));
                 }
-        
+
                 // **For Mobile: sap.m.Table**
                 if (oTable.bindItems) {
                     oTable.bindAggregation("items", {
@@ -115,35 +129,33 @@ sap.ui.define([
                             ]
                         })
                     });
-        
+
                     oTable.addColumn(new MColumn({ header: new Label({ text: "Product Code" }) }));
                     oTable.addColumn(new MColumn({ header: new Label({ text: "Product Name" }) }));
                 }
-        
+
                 this._oValueHelpDialog.update();
             }.bind(this));
-        
+
             // Open Dialog
             this._oValueHelpDialog.open();
         },
-
-        /** Handle OK Button */
         onValueHelpOk: function (oEvent) {
             var aTokens = oEvent.getParameter("tokens");
             var oMultiInput = this.getView().byId("multiInput");
-            
+
             // Clear previous tokens
             oMultiInput.removeAllTokens();
-        
+
             // Store selected items in model
             var aSelectedItems = aTokens.map((oToken) => ({
                 ID: oToken.getKey(),
                 Name: oToken.getText(),
             }));
-        
+
             var oModel = this.getView().getModel("viewModel");
             oModel.setProperty("/SelectedItems", aSelectedItems);
-        
+
             // Add tokens to MultiInput manually
             aTokens.forEach((oToken) => {
                 oMultiInput.addToken(new sap.m.Token({
@@ -151,11 +163,9 @@ sap.ui.define([
                     text: oToken.getText()
                 }));
             });
-        
+
             this._oValueHelpDialog.close();
         },
-
-        /** Handle Cancel Button */
         onValueHelpCancel: function () {
             this._oValueHelpDialog.close();
         },
@@ -163,13 +173,13 @@ sap.ui.define([
             var sQuery = this._oBasicSearchField.getValue().toLowerCase();
             var oTable = this._oValueHelpDialog.getTable();
             var oBinding;
-        
+
             if (oTable.bindRows) {
                 oBinding = oTable.getBinding("rows");
             } else if (oTable.bindItems) {
                 oBinding = oTable.getBinding("items");
             }
-        
+
             if (oBinding) {
                 var oFilter = new sap.ui.model.Filter({
                     filters: [
@@ -178,10 +188,9 @@ sap.ui.define([
                     ],
                     and: false
                 });
-        
+
                 oBinding.filter([oFilter]);
             }
         }
-        
     });
 });

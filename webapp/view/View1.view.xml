@@ -1,4 +1,6 @@
 <mvc:View
+    xmlns:uxap="sap.uxap"
+    xmlns:core="sap.ui.core"
     xmlns:mdc="sap.ui.mdc"
     controllerName="mutlivaluefield.controller.View1"
     xmlns:mvc="sap.ui.core.mvc"
@@ -9,15 +11,61 @@
         id="page"
         title="{i18n>title}"
     >
-        <VBox id="_IDGenVBox1">
-        <MultiInput id="multiInput"
-    showValueHelp="true"
-    valueHelpRequest=".onValueHelp">
-</MultiInput>
-
-
-
-
-        </VBox>
+        <Toolbar id="_IDGenToolbar">
+            <ToolbarSpacer id="_IDGenToolbarSpacer" />
+            <HBox id="_IDGenVBox1">
+                <Label
+                    id="_IDGenLabel"
+                    text="Please Select the Country ?"
+                />
+                <ComboBox id="_IDGenComboBox1"  change="OnSelection" >
+                    <items>
+                        <core:Item
+                            id="_IDGenItem"
+                            text="Algeria"
+                            key="Algeria"
+                        />
+                        <core:Item
+                            id="_IDGenItem1"
+                            text="Argentina"
+                            key="Argentina"
+                        />
+                        <core:Item
+                            id="_IDGenItem2"
+                            text="Australia"
+                            key="Australia"
+                        />
+                    </items>
+                </ComboBox>
+            </HBox>
+        </Toolbar>
+        <uxap:ObjectPageLayout id="_IDGenObjectPageLayout">
+            <uxap:headerContent>
+                <FlexBox id="_IDGenFlexBox">
+                    <VBox id="_IDGenVBox2">
+                        <Label
+                            id="_IDGenLabel1"
+                            text="FirstValueHelp"
+                        />
+                        <MultiInput
+                            id="multiInput"
+                            showValueHelp="true"
+                            valueHelpRequest=".onValueHelp"
+                        />
+                    </VBox>
+                </FlexBox>
+                <VBox id="vbox23">
+                    <Label
+                        id="_IDGenLabel12"
+                        text="SecondValueHelp"
+                    />
+                    <MultiInput
+                        id="multiInput1"
+                        showValueHelp="true"
+                        valueHelpRequest=".onValueHelp"
+                    />
+                </VBox>
+            </uxap:headerContent>
+        </uxap:ObjectPageLayout>
     </Page>
 </mvc:View>
