@@ -39,7 +39,7 @@ sap.ui.define([
         /** Open Value Help Dialog */
         onValueHelp: function () {
             var oView = this.getView();
-
+        
             if (!this._oValueHelpDialog) {
                 this._oValueHelpDialog = new ValueHelpDialog({
                     title: "Select Product",
@@ -50,37 +50,61 @@ sap.ui.define([
                     ok: this.onValueHelpOk.bind(this),
                     cancel: this.onValueHelpCancel.bind(this)
                 });
-
+        
                 oView.addDependent(this._oValueHelpDialog);
+        
+                // **Create FilterBar**
+                var oFilterBar = new sap.ui.comp.filterbar.FilterBar({
+                    advancedMode: true,
+                    filterBarExpanded: true,
+                    search: this.onFilterSearch.bind(this)
+                });
+        
+                // **Create Basic Search Field**
+                this._oBasicSearchField = new sap.m.SearchField({
+                    placeholder: "Search",
+                    width:"80%"
+                    
+                });
+                oFilterBar.setFilterBarExpanded(false);
+				oFilterBar.setBasicSearch(this._oBasicSearchField);
+                this._oBasicSearchField.attachSearch(function() {
+					oFilterBar.search();
+				});
+        
+                // oFilterBar.setBasicSearch(this._oBasicSearchField);
+        
+                // oFilterBar.addContent(this._oBasicSearchField);
+              
+                this._oValueHelpDialog.setFilterBar(oFilterBar);
             }
-
-            // Set Model to Dialog
+        
+            // **Set Model**
             var oModel = this.getView().getModel("productModel");
             this._oValueHelpDialog.setModel(oModel, "productModel");
-
-            // Get Table and Bind Data
+        
+            // **Get Table and Bind Data**
             this._oValueHelpDialog.getTableAsync().then(function (oTable) {
                 oTable.setModel(oModel, "productModel");
-
-                // For Desktop: sap.ui.table.Table
+        
+                // **For Desktop: sap.ui.table.Table**
                 if (oTable.bindRows) {
                     oTable.bindAggregation("rows", {
                         path: "productModel>/ZSALESREPORT"
                     });
-
-                    // Add Columns
+        
                     oTable.addColumn(new UIColumn({
                         label: new Label({ text: "Product Code" }),
                         template: new Text({ text: "{productModel>ProductCode}" })
                     }));
-
+        
                     oTable.addColumn(new UIColumn({
                         label: new Label({ text: "Product Name" }),
                         template: new Text({ text: "{productModel>ProductName}" })
                     }));
                 }
-
-                // For Mobile: sap.m.Table
+        
+                // **For Mobile: sap.m.Table**
                 if (oTable.bindItems) {
                     oTable.bindAggregation("items", {
                         path: "productModel>/ZSALESREPORT",
@@ -91,14 +115,14 @@ sap.ui.define([
                             ]
                         })
                     });
-
+        
                     oTable.addColumn(new MColumn({ header: new Label({ text: "Product Code" }) }));
                     oTable.addColumn(new MColumn({ header: new Label({ text: "Product Name" }) }));
                 }
-
+        
                 this._oValueHelpDialog.update();
             }.bind(this));
-
+        
             // Open Dialog
             this._oValueHelpDialog.open();
         },
@@ -134,6 +158,30 @@ sap.ui.define([
         /** Handle Cancel Button */
         onValueHelpCancel: function () {
             this._oValueHelpDialog.close();
+        },
+        onFilterSearch: function () {
+            var sQuery = this._oBasicSearchField.getValue().toLowerCase();
+            var oTable = this._oValueHelpDialog.getTable();
+            var oBinding;
+        
+            if (oTable.bindRows) {
+                oBinding = oTable.getBinding("rows");
+            } else if (oTable.bindItems) {
+                oBinding = oTable.getBinding("items");
+            }
+        
+            if (oBinding) {
+                var oFilter = new sap.ui.model.Filter({
+                    filters: [
+                        new sap.ui.model.Filter("ProductCode", sap.ui.model.FilterOperator.Contains, sQuery),
+                        new sap.ui.model.Filter("ProductName", sap.ui.model.FilterOperator.Contains, sQuery)
+                    ],
+                    and: false
+                });
+        
+                oBinding.filter([oFilter]);
+            }
         }
+        
     });
 });
