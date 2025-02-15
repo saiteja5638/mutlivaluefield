@@ -13,6 +13,10 @@ sap.ui.define([
     return Controller.extend("mutlivaluefield.controller.View1", {
         onInit() {
             this._loadProductModel();
+            var oModel = new sap.ui.model.json.JSONModel({
+                SelectedItems: []
+            });
+            this.getView().setModel(oModel, "viewModel");
         },
 
         /** Load JSON Model Directly in onInit */
@@ -102,16 +106,28 @@ sap.ui.define([
         /** Handle OK Button */
         onValueHelpOk: function (oEvent) {
             var aTokens = oEvent.getParameter("tokens");
-            var oModel = this.getView().getModel("productModel");
-
-            var aSelectedItems = aTokens.map(token => ({
-                ProductCode: token.getKey(),
-                ProductName: token.getText()
+            var oMultiInput = this.getView().byId("multiInput");
+            
+            // Clear previous tokens
+            oMultiInput.removeAllTokens();
+        
+            // Store selected items in model
+            var aSelectedItems = aTokens.map((oToken) => ({
+                ID: oToken.getKey(),
+                Name: oToken.getText(),
             }));
-
-            // Store Selected Items
-            console.log(aSelectedItems)
+        
+            var oModel = this.getView().getModel("viewModel");
             oModel.setProperty("/SelectedItems", aSelectedItems);
+        
+            // Add tokens to MultiInput manually
+            aTokens.forEach((oToken) => {
+                oMultiInput.addToken(new sap.m.Token({
+                    key: oToken.getKey(),
+                    text: oToken.getText()
+                }));
+            });
+        
             this._oValueHelpDialog.close();
         },
 
